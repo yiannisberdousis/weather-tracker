@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Weather Tracker | Ζωντανός Καιρός</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-default">
+  <div class="background-decorations">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- Top Navigation / Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>SkyPulse</h1>
+          <span class="live-pill">
+            <span class="live-dot"></span> LIVE TRACKER
+          </span>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="clock-badge" id="liveClock" title="Τοπική ώρα">--:--:--</div>
+        
+        <div class="unit-toggle" role="group" aria-label="Επιλογή μονάδας θερμοκρασίας">
+          <button type="button" class="unit-btn active" id="unitC" data-unit="c">°C</button>
+          <button type="button" class="unit-btn" id="unitF" data-unit="f">°F</button>
+        </div>
+
+        <button type="button" class="icon-btn" id="refreshBtn" title="Ανανέωση δεδομένων καιρού" aria-label="Ανανέωση">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+            <path d="M16 21h5v-5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-section">
+      <form id="searchForm" class="search-bar">
+        <div class="search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          id="cityInput" 
+          placeholder="Αναζήτηση πόλης (π.χ. Αθήνα, Θεσσαλονίκη, London, Paris)..." 
+          autocomplete="off"
+          required
+        >
+        <button type="submit" class="search-submit-btn">Αναζήτηση</button>
+      </form>
+
+      <!-- Quick City Suggestions -->
+      <div class="quick-cities" id="quickCities">
+        <span class="quick-label">Δημοφιλείς:</span>
+        <button type="button" class="city-chip" data-city="Αθήνα">Αθήνα</button>
+        <button type="button" class="city-chip" data-city="Θεσσαλονίκη">Θεσσαλονίκη</button>
+        <button type="button" class="city-chip" data-city="Ηράκλειο">Ηράκλειο</button>
+        <button type="button" class="city-chip" data-city="Χανιά">Χανιά</button>
+        <button type="button" class="city-chip" data-city="Πάτρα">Πάτρα</button>
+        <button type="button" class="city-chip" data-city="London">Λονδίνο</button>
+        <button type="button" class="city-chip" data-city="New York">Νέα Υόρκη</button>
+        <button type="button" class="city-chip" data-city="Tokyo">Τόκιο</button>
+      </div>
+    </section>
+
+    <!-- Loading & Error States -->
+    <div id="statusMessage" class="status-banner hidden"></div>
+
+    <!-- Main Weather Content -->
+    <main class="dashboard-grid" id="weatherContent">
+      
+      <!-- Primary Current Weather Hero Card -->
+      <section class="card hero-card" id="heroCard">
+        <div class="hero-top">
+          <div class="location-details">
+            <div class="location-header">
+              <svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <h2 id="cityName">Αθήνα</h2>
+              <span class="country-tag" id="countryCode">GR</span>
+            </div>
+            <p class="last-updated" id="lastUpdated">Ενημερώθηκε πριν από λίγο</p>
+          </div>
+
+          <div class="weather-visual">
+            <div class="weather-icon-wrapper" id="weatherIconWrapper">
+              <!-- Dynamically replaced SVG icon -->
+              <div class="weather-icon-placeholder">☀️</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-center">
+          <div class="temperature-display">
+            <span class="temp-value" id="currentTemp">18</span>
+            <span class="temp-symbol">°</span>
+          </div>
+          <div class="condition-summary">
+            <span class="condition-name" id="conditionText">Αίθριος Ουρανός</span>
+            <span class="feels-like" id="feelsLike">Αίσθηση σαν 18°C</span>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <div class="metric-icon humidity">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Υγρασία</span>
+              <span class="metric-val" id="humidityVal">65%</span>
+            </div>
+          </div>
+
+          <div class="metric-item">
+            <div class="metric-icon wind">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/>
+                <path d="M9.6 4.6A2 2 0 1 1 11 8H2"/>
+                <path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Άνεμος</span>
+              <span class="metric-val" id="windVal">12 km/h</span>
+            </div>
+          </div>
+
+          <div class="metric-item">
+            <div class="metric-icon precipitation">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>
+                <path d="m8 19-2 3"/>
+                <path d="m14 19-2 3"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Βροχόπτωση</span>
+              <span class="metric-val" id="precipVal">0.0 mm</span>
+            </div>
+          </div>
+
+          <div class="metric-item">
+            <div class="metric-icon pressure">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m16.2 7.8-4.2 4.2"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Πίεση</span>
+              <span class="metric-val" id="pressureVal">1014 hPa</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hourly Forecast Section -->
+      <section class="card hourly-card">
+        <div class="card-header">
+          <h3>
+            <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Ωριαία Πρόγνωση (Επόμενες 24 Ώρες)
+          </h3>
+        </div>
+        <div class="hourly-scroll-container" id="hourlyForecast">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- Daily 7-Day Forecast Section -->
+      <section class="card daily-card">
+        <div class="card-header">
+          <h3>
+            <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Πρόγνωση 7 Ημερών
+          </h3>
+        </div>
+        <div class="daily-list" id="dailyForecast">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Τροφοδοτείται από δεδομένα σε πραγματικό χρόνο μέσω <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo API</a> • Χωρίς διαφημίσεις & cookies</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
